@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # deploy.sh — Orchestrates the three-bundle deployment for Volta Industrial.
 #
+# Bundle layout (bundles cannot nest; each has its own databricks.yml):
+#   volta-industrial/databricks.yml   ← Bundle 1 (infra): schema, volume, data gen, pipeline, metric views, dashboard
+#   volta-industrial/bundles/genie/   ← Bundle 2 (genie): Genie space (needs populated tables)
+#   volta-industrial/bundles/app/     ← Bundle 3 (app): Databricks App + AI Gateway (needs genie_space_id)
+#
 # Dependency chain:
 #   Bundle 1 (infra) -> jobs run -> gate (tables + metric views exist)
 #   Bundle 2 (genie) -> gate (Genie space created + functional)
 #   Bundle 3 (app)   -> SPN permissions granted -> app deployed
 #
 # Usage:
-#   ./deploy.sh [--target dev|staging|prod] [--skip-data-gen] [--skip-gates]
+#   cd volta-industrial && ./deploy.sh [--target dev|staging|prod] [--skip-data-gen] [--skip-gates]
 #
 # Requires: databricks CLI authenticated, jq installed.
 
@@ -85,9 +90,9 @@ echo "────────────────────────�
 echo "  STAGE 1: Deploy Infrastructure Bundle"
 echo "──────────────────────────────────────────────────────────────"
 
-cd "$BUNDLE_ROOT/bundles/infra"
+cd "$BUNDLE_ROOT"
 databricks bundle deploy --target "$TARGET" --var="catalog=$CATALOG" --var="schema=$SCHEMA"
-echo "  Infrastructure bundle deployed."
+echo "  Infrastructure bundle deployed (root databricks.yml)."
 
 # ─── Run data generation job ─────────────────────────────────────────────────
 if [[ "$SKIP_DATA_GEN" == false ]]; then
@@ -159,6 +164,7 @@ echo "  STAGE 2: Deploy Genie Bundle"
 echo "──────────────────────────────────────────────────────────────"
 
 cd "$BUNDLE_ROOT/bundles/genie"
+# Note: CLI finds bundles/genie/databricks.yml (not the parent root) because CWD has its own.
 databricks bundle deploy --target "$TARGET" \
   --var="catalog=$CATALOG" \
   --var="schema=$SCHEMA" \
@@ -187,6 +193,7 @@ echo "  STAGE 3: Deploy App Bundle"
 echo "──────────────────────────────────────────────────────────────"
 
 cd "$BUNDLE_ROOT/bundles/app"
+# Note: CLI finds bundles/app/databricks.yml (not the parent root) because CWD has its own.
 databricks bundle deploy --target "$TARGET" \
   --var="catalog=$CATALOG" \
   --var="schema=$SCHEMA" \
