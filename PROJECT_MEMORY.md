@@ -73,7 +73,11 @@ Canonical long-term memory for this project. Read at session start.
 - **Genie:** Single Genie space over metric views, not raw tables
 - **AI Gateway:** Per-plant $500/mo budget cap, $5 per-request cap, $25 per-session cap
 - **Observability:** MLFlow 3 traces + OpenTelemetry
-- **IaC:** Declarative Automation Bundles (DABs)
+- **IaC:** Three Declarative Automation Bundles (DABs), orchestrated by `deploy.sh`
+  - **Bundle 1 (`bundles/infra`)**: Schema, volume, data gen job, SDP pipeline, metric views, dashboard
+  - **Bundle 2 (`bundles/genie`)**: Genie space (depends on: tables + metric views populated)
+  - **Bundle 3 (`bundles/app`)**: Databricks App + AI Gateway (depends on: Genie space ID, SPN permissions)
+  - `deploy.sh` feeds output vars from each bundle to the next, with gates between stages
 
 ---
 

@@ -61,7 +61,36 @@ Unplanned downtime costs ~$22K/hour. The solution surfaces risk, ranks the maint
 | Search | Lakebase Search (hybrid vector + full-text) |
 | Observability | MLFlow 3 Traces + OpenTelemetry |
 | Cost Governance | Unity AI Gateway |
-| IaC | Declarative Automation Bundles |
+| IaC | Declarative Automation Bundles (3 bundles, orchestrated) |
+
+---
+
+## Bundle Architecture
+
+Three separate DABs with deployment dependencies, orchestrated by `deploy.sh`:
+
+```
+volta-industrial/
+├── deploy.sh                 # Orchestrator: deploy 1 -> run jobs -> gate -> deploy 2 -> deploy 3 -> grant perms
+├── bundles/
+│   ├── infra/                # Bundle 1: schema, volume, data gen job, SDP pipeline, metric views, dashboard
+│   │   └── databricks.yml
+│   ├── genie/                # Bundle 2: Genie space (requires tables + metric views populated)
+│   │   └── databricks.yml
+│   └── app/                  # Bundle 3: Databricks App + AI Gateway (requires Genie space ID + SPN perms)
+│       └── databricks.yml
+├── data_generation/          # generate_data notebook (referenced by Bundle 1)
+├── transformation/           # SDP pipeline SQL (referenced by Bundle 1)
+├── specifications/           # Original specs (reference)
+└── app/                      # App source (referenced by Bundle 3)
+```
+
+**Dependency chain:**
+1. `bundles/infra` deploys -> data gen job runs -> SDP pipeline runs -> tables + metric views exist
+2. `bundles/genie` deploys (needs populated tables) -> Genie space created
+3. `bundles/app` deploys (needs genie_space_id) -> SPN granted permissions to Genie + tables -> app functional
+
+`deploy.sh` captures `bundle summary` output from each stage and passes resource IDs as `--var` to the next.
 
 ---
 

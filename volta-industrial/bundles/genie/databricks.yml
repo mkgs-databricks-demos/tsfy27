@@ -1,0 +1,48 @@
+# Bundle 2: Genie — Genie space over populated tables + metric views.
+# Deploy AFTER Bundle 1 jobs complete and tables are verified.
+# Requires: gold_line_status, gold_open_atrisk, gold_maintenance_recommendations,
+#           mv_line_risk, raw_parts, raw_lines all exist and have data.
+bundle:
+  name: volta-genie
+
+workspace:
+  root_path: /Workspace/Users/${workspace.current_user.userName}/volta-industrial-workshop/genie
+
+variables:
+  catalog:
+    description: Unity Catalog containing the Volta tables.
+    default: ncqai
+  schema:
+    description: Schema containing the gold tables and metric views.
+    default: volta_industrial
+  dashboard_id:
+    description: Dashboard ID from Bundle 1 (passed by deploy.sh).
+    default: ""
+
+resources:
+  # TODO: Add Genie space resource once DAB genie_spaces support is confirmed
+  # genie_spaces:
+  #   volta_plant_floor:
+  #     name: "Volta Plant Floor"
+  #     description: "Production intelligence for Volta Industrial plant managers."
+  #     tables:
+  #       - ${var.catalog}.${var.schema}.mv_line_risk
+  #       - ${var.catalog}.${var.schema}.gold_line_status
+  #       - ${var.catalog}.${var.schema}.gold_open_atrisk
+  #       - ${var.catalog}.${var.schema}.gold_maintenance_recommendations
+  #       - ${var.catalog}.${var.schema}.raw_parts
+  #       - ${var.catalog}.${var.schema}.raw_lines
+  #     instructions: |
+  #       ... (see build-specs/01-milestone-data.md for full text)
+  #     sample_questions:
+  #       - "What's our downtime exposure right now?"
+  #       - "Which plants is the failure risk concentrated in?"
+  #       - "LINE-04 is trending toward a stop — how bad is it?"
+  #       - "Should we pull LINE-04 now or run it to the end of the shift?"
+
+targets:
+  dev:
+    mode: development
+    default: true
+  prod:
+    mode: production

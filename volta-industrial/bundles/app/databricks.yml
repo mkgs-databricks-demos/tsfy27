@@ -1,0 +1,62 @@
+# Bundle 3: App — Databricks App + AI Gateway.
+# Deploy AFTER Bundle 2 (Genie space exists and SPN can be granted access).
+# Requires: genie_space_id from Bundle 2 output, tables accessible.
+bundle:
+  name: volta-app
+
+workspace:
+  root_path: /Workspace/Users/${workspace.current_user.userName}/volta-industrial-workshop/app
+
+variables:
+  catalog:
+    description: Unity Catalog for data access.
+    default: ncqai
+  schema:
+    description: Schema for data access.
+    default: volta_industrial
+  genie_space_id:
+    description: Genie space ID from Bundle 2 (passed by deploy.sh).
+    default: ""
+  dashboard_id:
+    description: Dashboard ID from Bundle 1 (for embedded iframe).
+    default: ""
+  ai_gateway_endpoint:
+    description: AI Gateway endpoint name for governed model calls.
+    default: ""
+
+resources:
+  # TODO: Add Databricks App resource
+  # apps:
+  #   volta_plant_floor:
+  #     name: volta-plant-floor
+  #     source_code_path: ../../app
+  #     description: "Volta Plant Floor — decision-support app for plant managers."
+  #     resources:
+  #       - name: lakebase
+  #         ...
+  #     user_authorization:
+  #       scopes:
+  #         - ai-gateway
+  #         - sql
+  #         - serving
+
+  # TODO: Add AI Gateway resource
+  # ai_gateway:
+  #   volta_gateway:
+  #     name: volta-production-intelligence
+  #     endpoint: ${var.ai_gateway_endpoint}
+  #     budget:
+  #       per_request_limit_usd: 5.00
+  #       monthly_limit_usd: 5000.00
+  #     guardrails:
+  #       ...
+  #     inference_logging:
+  #       enabled: true
+  #       table: ${var.catalog}.${var.schema}.inference_log
+
+targets:
+  dev:
+    mode: development
+    default: true
+  prod:
+    mode: production

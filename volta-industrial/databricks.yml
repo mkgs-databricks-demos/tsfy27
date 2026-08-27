@@ -48,15 +48,20 @@ resources:
     volta_setup:
       name: "[Workshop] Volta Industrial — generate data"
       description: "Generates the synthetic raw_* parquet datasets into the raw_data volume. Run this once after deploy, then build the pipeline/Lakebase/app/gateway yourself."
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${resources.schemas.demo_schema.name}
       tasks:
         - task_key: generate_data
           spark_python_task:
             python_file: ./data_generation/generate_data
             parameters:
               - --catalog
-              - ${var.catalog}
+              - "{{job.parameters.catalog}}"
               - --schema
-              - ${resources.schemas.demo_schema.name}
+              - "{{job.parameters.schema}}"
           environment_key: sdk_default
       environments:
         - environment_key: sdk_default
