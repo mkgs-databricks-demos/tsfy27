@@ -24,7 +24,7 @@ workspace:
 variables:
   catalog:
     description: Unity Catalog for the workshop data (must already exist / you can create it).
-    default: dbdemos_templates
+    default: ncqai
   schema:
     description: Schema for the demo tables + the raw_data volume (created by this bundle).
     default: volta_industrial
@@ -50,11 +50,13 @@ resources:
       description: "Generates the synthetic raw_* parquet datasets into the raw_data volume. Run this once after deploy, then build the pipeline/Lakebase/app/gateway yourself."
       tasks:
         - task_key: generate_data
-          notebook_task:
-            notebook_path: ./data_generation/generate_data.py
-            base_parameters:
-              catalog: ${var.catalog}
-              schema: ${resources.schemas.demo_schema.name}
+          spark_python_task:
+            python_file: ./data_generation/generate_data
+            parameters:
+              - --catalog
+              - ${var.catalog}
+              - --schema
+              - ${resources.schemas.demo_schema.name}
           environment_key: sdk_default
       environments:
         - environment_key: sdk_default
